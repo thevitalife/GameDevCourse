@@ -10,7 +10,12 @@ public class Damagable : MonoBehaviour
     [SerializeField]
     private float maxDamage;
 
-    private void OnTriggerEnter(Collider other)
+    protected virtual void OnTriggerEnter(Collider other)
+    {
+        DealDamage(other);
+    }
+
+    protected virtual void DealDamage(Collider other)
     {
         if (other.CompareTag("Player"))
         {
