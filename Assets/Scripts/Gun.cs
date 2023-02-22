@@ -13,23 +13,15 @@ public class Gun : MonoBehaviour
     [SerializeField]
     private float rechargeTime = 1;
 
-    private void Start()
-    {
-        StartCoroutine(StartShooting());
-    }
+    private float lastShootTime = float.MinValue;
 
     public void Shoot()
     {
-        Bullet bullet = Instantiate(bulletPrefab);
-        bullet.Init(bulletPoint.position, bulletPoint.forward);
-    }
-
-    private IEnumerator StartShooting()
-    {
-        while (true)
+        if (Time.time - rechargeTime > lastShootTime)
         {
-            yield return new WaitForSeconds(rechargeTime);
-            Shoot();
+            Bullet bullet = Instantiate(bulletPrefab);
+            bullet.Init(bulletPoint.position, bulletPoint.forward);
+            lastShootTime = Time.time;
         }
     }
 }
