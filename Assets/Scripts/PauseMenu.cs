@@ -12,10 +12,14 @@ public class PauseMenu : MonoBehaviour
     [SerializeField]
     private Button replayButton;
 
+    [SerializeField]
+    private Button mainMenuButton;
+
     private void Awake()
     {
         resumeButton.onClick.AddListener(Resume);
         replayButton.onClick.AddListener(Replay);
+        mainMenuButton.onClick.AddListener(MainMenu);
     }
 
     public void Activate()
@@ -39,5 +43,15 @@ public class PauseMenu : MonoBehaviour
     {
         Deactivate();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void MainMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    private void OnDestroy()
+    {
+        Deactivate();
     }
 }
