@@ -13,18 +13,16 @@ public class Wallet : MonoBehaviour
     void Start()
     {
         Instance = this;
+        value = PlayerPrefs.GetFloat("Wallet", 0);
         text.text = value.ToString();
     }
+
     public void AddValue(float newValue)
     {
         value += newValue;
         Debug.Log(value);
         text.text = value.ToString();
+        PlayerPrefs.SetFloat("Wallet", value);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
