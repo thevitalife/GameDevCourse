@@ -14,14 +14,35 @@ public class ZombieCharacterControl : MonoBehaviour
         Direct
     }
 
-    [SerializeField] private float m_moveSpeed = 2;
-    [SerializeField] private float m_turnSpeed = 200;
-    [SerializeField] private float m_attackTimeout = 2;
+    [SerializeField] 
+    private float m_moveSpeed = 2;
 
-    [SerializeField] private Animator m_animator = null;
-    [SerializeField] private Rigidbody m_rigidBody = null;
+    [SerializeField]
+    private float m_turnSpeed = 200;
 
-    [SerializeField] private ControlMode m_controlMode = ControlMode.Tank;
+    [SerializeField] 
+    private float m_attackTimeout = 2;
+
+    [SerializeField] 
+    private Animator m_animator = null;
+
+    [SerializeField] 
+    private Rigidbody m_rigidBody = null;
+
+    [SerializeField]
+    private Transform attackPoint;
+
+    [SerializeField]
+    private float attackRadius;
+
+    [SerializeField]
+    private float damage;
+
+    [SerializeField]
+    private LayerMask attackLayer;
+
+    [SerializeField]
+    private ParticleSystem attackHitParticle;
 
     private float m_currentV = 0;
     private float m_currentH = 0;
@@ -31,6 +52,9 @@ public class ZombieCharacterControl : MonoBehaviour
     private Vector3 m_currentDirection = Vector3.zero;
     private float m_currentAttackTimeout = 0;
 
+    public Vector2 Direction { get; set; }
+    public bool OrderToAttack { get; set; }
+
     private void Awake()
     {
         if (!m_animator) { gameObject.GetComponent<Animator>(); }
@@ -39,34 +63,7 @@ public class ZombieCharacterControl : MonoBehaviour
 
     private void Update()
     {
-        switch (m_controlMode)
-        {
-            case ControlMode.Direct:
-                DirectUpdate();
-                break;
-
-            case ControlMode.Tank:
-                TankUpdate();
-                break;
-
-            default:
-                Debug.LogError("Unsupported state");
-                break;
-        }
-    }
-
-    private void TankUpdate()
-    {
-        float v = Input.GetAxis("Vertical");
-        float h = Input.GetAxis("Horizontal");
-
-        m_currentV = Mathf.Lerp(m_currentV, v, Time.deltaTime * m_interpolation);
-        m_currentH = Mathf.Lerp(m_currentH, h, Time.deltaTime * m_interpolation);
-
-        transform.position += transform.forward * m_currentV * m_moveSpeed * Time.deltaTime;
-        transform.Rotate(0, m_currentH * m_turnSpeed * Time.deltaTime, 0);
-
-        m_animator.SetFloat("MoveSpeed", m_currentV);
+        DirectUpdate();
     }
 
     private void DirectUpdate()
@@ -75,8 +72,8 @@ public class ZombieCharacterControl : MonoBehaviour
 
         if (isWalking)
         {
-            float v = Input.GetAxis("Vertical");
-            float h = Input.GetAxis("Horizontal");
+            float v = Direction.y;
+            float h = Direction.x;
 
             Transform camera = Camera.main.transform;
 
@@ -102,16 +99,27 @@ public class ZombieCharacterControl : MonoBehaviour
 
         if (m_currentAttackTimeout <= 0)
         {
-            float jump = Input.GetAxis("Jump");
-            if (jump != 0 && isWalking)
+            if (OrderToAttack && isWalking)
             {
                 m_animator.SetTrigger("Attack");
                 m_currentAttackTimeout = m_attackTimeout;
+                OrderToAttack = false;
             }
         }
         else
         {
             m_currentAttackTimeout -= Time.deltaTime;
+        }
+    }
+
+    public void DealDamage()
+    {
+        var colliders = Physics.OverlapSphere(attackPoint.position, attackRadius, attackLayer.value);
+        foreach (var collider in colliders)
+        {
+            var health = collider.GetComponent<Health>();
+            health.Damage(damage);
+            attackHitParticle.Play();
         }
     }
 }
